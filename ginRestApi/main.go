@@ -27,12 +27,7 @@ func main () {
 func getCharacterById (ctx *gin.Context){
 	id := ctx.Params.ByName("id");
 	fmt.Println(id);
-	var gameChar character
-	for _, char := range gameChars {
-		if(char.ID == id){
-			gameChar = char
-		}
-	}
+	gameChar := gameChars[id];	
 
 	fmt.Println(gameChar);
 	if(gameChar.ID == ""){
@@ -50,8 +45,8 @@ func addCharacter (ctx *gin.Context) {
 		return
 	}
 
-	gameChars = append(gameChars, newCharacter);
-	fmt.Println(gameChars[3]);
+	gameChars[newCharacter.ID] = newCharacter;
+	fmt.Println(gameChars);
 
 	ctx.IndentedJSON(http.StatusOK, gameChars);
 	
@@ -61,20 +56,20 @@ func getCharacters (ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, gameChars);
 }
 
-var gameChars = []character{
-	{
+var gameChars = map[string]character{
+	"1" : {
 		ID: "1",
 		NAME: "Alice",
 		AGE: 20,
 		HP: 1000,
 	},
-	{
+	"2": {
 		ID: "2",
 		NAME: "Bob",
 		AGE: 22,
 		HP: 1400,
 	},
-	{
+	"3": {
 		ID: "3",
 		NAME: "Oscar",
 		AGE: 22,

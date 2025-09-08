@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	// "github.com/jmoiron/sqlx"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -38,60 +39,62 @@ func connectDb() {
 	fmt.Println("db connected!")
 }
 type User struct {
-	Name string `json:"name"`
-	Username string `json:"username"`
+	Id string `db:"id"`
+	Username string `db:"username"`
+	CreatedAt string `db:"created_at"`
 }
 
-// func getUsers(ctx *gin.Context) {
-// 	var users []User
-// 	result, err := db.Query("SELECT * from USER")
-
-// 	if err != nil {
-// 		fmt.Println("error while fetching, ", err)
-// 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Failed to fetch users"})
-// 		return
-// 	}
-
-// 	defer result.Close()
-
-// 	for result.Next() {
-// 		var user User
-// 		if err := result.Scan(&user.Name); err != nil {
-// 			fmt.Println("get error while scanning")
-			
-// 			// The fix is here:
-// 			// You must convert the error to a string before sending it in JSON.
-// 			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-// 			return
-// 		}
-// 		fmt.Println(user)
-// 		users = append(users, user)
-// 	}
-
-// 	ctx.IndentedJSON(http.StatusOK, users)
-// }
-
-
-func getUsers() ([]User, error) {
+func getUsers(ctx *gin.Context) {
 	var users []User
+	result, err := db.Query("SELECT id, username, created_at from USERS")
 
-	name := "DevAggarwal";
-	rows, err := db.Query("SELECT name, username FROM user WHERE name = $1", name)
-    if err != nil {
-        return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
-    }
-
-	for rows.Next(){
-		var user User 
-        if err := rows.Scan(&user.Name, &user.Username); err != nil {
-            return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
-        }
-		users = append(users, user);
+	if err != nil {
+		fmt.Println("error while fetching, ", err)
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Failed to fetch users"})
+		return
 	}
 
-	return users, nil
+	defer result.Close()
 
+	for result.Next() {
+		var user User
+		if err := result.Scan(&user.Id, &user.Username, &user.CreatedAt); err != nil {
+			fmt.Println("get error while scanning")
+			
+			// The fix is here:
+			// You must convert the error to a string before sending it in JSON.
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		// fmt.Println(user)
+		users = append(users, user)
+	}
+
+	fmt.Println(users)
+	ctx.IndentedJSON(http.StatusOK, users)
 }
+
+
+// func getUsers() ([]User, error) {
+// 	var users []User
+
+// 	name := "DevAggarwal";
+// 	rows, err := db.Query("select id, username, created_at from users")
+//     if err != nil {
+//         return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
+//     }
+
+// 	for rows.Next(){
+// 		var user User 
+//         if err := rows.Scan(&user.id, &user.username, &user.createdAt); err != nil {
+//             return nil, fmt.Errorf("albumsByArtist %q: %v", name, err)
+//         }
+// 		users = append(users, user);
+// 	}
+
+// 	return users, nil
+
+// }
 
 func main () {
 
@@ -103,16 +106,16 @@ func main () {
 
 	connectDb();
 
-	users, err := getUsers();
-	if err != nil {
-		fmt.Println(err);
-		return;
-	}
-	fmt.Println(users);
+	// users, err := getUsers();
+	// if err != nil {
+	// 	fmt.Println(err);
+	// 	return;
+	// }
+	// fmt.Println(users);
 
 	router := gin.Default();
 
-	// router.GET("/users", getUsers)
+	router.GET("/users", getUsers)
 	router.GET("/getCharacters", getCharacters);
 	router.POST("/addCharacter", addCharacter);
 	router.GET("/getCharacter/:id", getCharacterById)

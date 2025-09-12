@@ -93,11 +93,11 @@ type logInBody struct {
 	Password string `json:"password"`
 }
 
-func logIn (c *gin.Context) {
+func logIn (c *gin.Context) { 
 	var logInCred logInBody
 
 	err := c.BindJSON(&logInCred);
-	if(err != nil){
+	if err != nil {
 		fmt.Println("error occ", err);
 		c.IndentedJSON(500, gin.H{"success": false, "message":"error occ", "error": err})
 		return
